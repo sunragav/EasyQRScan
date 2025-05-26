@@ -13,7 +13,7 @@ plugins {
 }
 
 subprojects {
-    group = "io.github.kalinjul.easyqrscan"
+    group = "io.github.sunragav.easyqrscan"
 }
 
 nexusPublishing {

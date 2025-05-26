@@ -2,7 +2,7 @@ package org.publicvalue.multiplatform.qrcode
 
 import android.util.Log
 import android.view.Surface.ROTATION_0
-import android.view.Surface.ROTATION_180
+import android.view.Surface.ROTATION_90
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -34,7 +34,7 @@ fun CameraView(
 
     LaunchedEffect(cameraPosition) {
         val preview = when (defaultOrientation) {
-            CameraOrientation.LANDSCAPE -> Preview.Builder().setTargetRotation(ROTATION_180).build()
+            CameraOrientation.LANDSCAPE -> Preview.Builder().setTargetRotation(ROTATION_90).build()
             CameraOrientation.PORTRAIT -> Preview.Builder().setTargetRotation(ROTATION_0).build()
             null -> Preview.Builder().build()
         }
