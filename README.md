@@ -1,8 +1,8 @@
 # This is a fork of original EasyQRScan project with a few modifications to support a default orientation at the time of launching the scanner and to support toggling the front and back camera
 # EasyQRScan: Compose Multiplatform QR-Code Scanner
-[![CI Status](https://img.shields.io/github/actions/workflow/status/kalinjul/EasyQRScan/main.yml)]((https://github.com/sunrgav/EasyQRScan/actions/workflows/main.yml))
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.kalinjul.easyqrscan/scanner)](https://repo1.maven.org/maven2/io/github/sunragav/easyqrscan/scanner/)
-[![Snapshot](https://img.shields.io/nexus/s/io.github.kalinjul.easyqrscan/scanner?server=https%3A%2F%2Fs01.oss.sonatype.org&label=latest%20snapshot)](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/sunragav/easyqrscan/scanner/)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/sunragav/EasyQRScan/main.yml)]((https://github.com/sunrgav/EasyQRScan/actions/workflows/main.yml))
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.sunragav.easyqrscan/scanner)](https://repo1.maven.org/maven2/io/github/sunragav/easyqrscan/scanner/)
+[![Snapshot](https://img.shields.io/nexus/s/io.github.sunragav.easyqrscan/scanner?server=https%3A%2F%2Fs01.oss.sonatype.org&label=latest%20snapshot)](https://s01.oss.sonatype.org/content/repositories/snapshots/io/github/sunragav/easyqrscan/scanner/)
 ![Kotlin Version](https://kotlin-version.aws.icerock.dev/kotlin-version?group=io.github.sunragav.easyqrscan&name=scanner)
 ![Compose Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsunragav%2FEasyQRScan%2Fmain%2Fgradle%2Flibs.versions.toml&query=%24.versions%5B'compose-multiplatform'%5D&label=Compose%20Version)
 
