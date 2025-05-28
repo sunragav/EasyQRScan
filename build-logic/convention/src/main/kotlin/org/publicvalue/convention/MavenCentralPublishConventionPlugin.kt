@@ -46,7 +46,7 @@ class MavenCentralPublishConventionPlugin : Plugin<Project> {
                             // description seems to be only available after evaluation
                             pom.description.set(project.description)
                         }
-                        url.set("https://github.com/kalinjul/EasyQRScan")
+                        url.set("https://github.com/sunragav/EasyQRScan")
                         licenses {
                             license {
                                 name.set("Apache-2.0 License")
@@ -63,11 +63,16 @@ class MavenCentralPublishConventionPlugin : Plugin<Project> {
                                     name.set("Alexander Karkossa")
                                     email.set("alexander.karkossa@googlemail.com")
                                 }
+                                developer {
+                                    id.set("sunragav")
+                                    name.set("Sundara Raghavan")
+                                    email.set("sunragav@gmail.com")
+                                }
                             }
                             scm {
-                                connection.set("scm:git:github.com/kalinjul/EasyQRScan.git")
-                                developerConnection.set("scm:git:ssh://github.com/kalinjul/EasyQRScan.git")
-                                url.set("https://github.com/kalinjul/EasyQRScan/tree/main")
+                                connection.set("scm:git:github.com/sunragav/EasyQRScan.git")
+                                developerConnection.set("scm:git:ssh://github.com/sunragav/EasyQRScan.git")
+                                url.set("https://github.com/sunragav/EasyQRScan/tree/main")
                             }
                         }
                     }
