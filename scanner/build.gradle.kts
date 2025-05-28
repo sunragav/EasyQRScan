@@ -3,8 +3,8 @@ import org.publicvalue.convention.config.configureIosTargets
 plugins {
     id("org.publicvalue.convention.android.library")
     id("org.publicvalue.convention.kotlin.multiplatform.mobile")
-    id("org.publicvalue.convention.centralPublish")
     id("org.publicvalue.convention.compose.multiplatform")
+    alias(libs.plugins.vanniktech.maven.publish)
 }
 
 description = "Compose Multiplatform QR Code Scanner for Android/iOS"
