@@ -60,7 +60,7 @@ fun UiScannerView(
     cameraPosition: CameraPosition,
     onScanned: (String) -> Boolean,
     defaultOrientation: CameraOrientation? = null,
-    scanningActive: Boolean
+    scanningEnabled: Boolean
 ) {
     val coordinator = remember {
         ScannerCameraCoordinator(
@@ -83,8 +83,8 @@ fun UiScannerView(
         }
     }
 
-    LaunchedEffect(scanningActive) {
-        coordinator.setScanningEnabled(scanningActive)
+    LaunchedEffect(scanningEnabled) {
+        coordinator.setScanningEnabled(scanningEnabled)
     }
 
     UIKitView<UIView>(

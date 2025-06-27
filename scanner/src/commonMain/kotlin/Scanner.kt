@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
  *                  Return false if scanning should continue.
  * @param cameraPosition Camera position (front/back) to use.
  * @param defaultOrientation Default orientation of the camera.
- * @param scanningActive Whether scanning is active.
+ * @param scanningEnabled Whether scanning is active.
  */
 @Composable
 expect fun Scanner(
@@ -29,7 +29,7 @@ expect fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition = CameraPosition.BACK,
     defaultOrientation: CameraOrientation? = null,
-    scanningActive: Boolean
+    scanningEnabled: Boolean
 )
 
 /**
@@ -42,7 +42,7 @@ expect fun Scanner(
  * @param permissionText Text to show if permission was denied.
  * @param openSettingsLabel Label to show on the "Go to settings" Button
  * @param defaultOrientation Default orientation of the camera.
- * @param scanningActive Whether scanning is active.
+ * @param scanningEnabled Whether scanning is active.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -53,7 +53,7 @@ fun ScannerWithPermissions(
     permissionText: String = "Camera is required for QR Code scanning",
     openSettingsLabel: String = "Open Settings",
     defaultOrientation: CameraOrientation?,
-    scanningActive: Boolean,
+    scanningEnabled: Boolean,
 ) {
     ScannerWithPermissions(
         modifier = modifier.clipToBounds(),
@@ -72,7 +72,7 @@ fun ScannerWithPermissions(
             }
         },
         defaultOrientation,
-        scanningActive
+        scanningEnabled
     )
 }
 
@@ -85,7 +85,7 @@ fun ScannerWithPermissions(
  *                  Return false if scanning should continue.
  * @param permissionDeniedContent Content to show if permission was denied.
  * @param defaultOrientation Default orientation of the camera.
- * @param scanningActive Whether scanning is active.
+ * @param scanningEnabled Whether scanning is active.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -95,7 +95,7 @@ fun ScannerWithPermissions(
     cameraPosition: CameraPosition,
     permissionDeniedContent: @Composable (CameraPermissionState) -> Unit,
     defaultOrientation: CameraOrientation?,
-    scanningActive: Boolean,
+    scanningEnabled: Boolean,
 ) {
     val permissionState = rememberCameraPermissionState()
 
@@ -112,7 +112,7 @@ fun ScannerWithPermissions(
             onScanned = onScanned,
             cameraPosition = cameraPosition,
             defaultOrientation = defaultOrientation,
-            scanningActive = scanningActive,
+            scanningEnabled = scanningEnabled,
         )
     } else {
         permissionDeniedContent(permissionState)

@@ -24,7 +24,7 @@ fun CameraView(
     analyzer: BarcodeAnalyzer,
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
-    scanningActive: Boolean = true,
+    scanningEnabled: Boolean = true,
 ) {
     val localContext = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -34,8 +34,8 @@ fun CameraView(
     val previewView = remember { PreviewView(localContext) }
     val imageAnalysis = remember { ImageAnalysis.Builder().build() }
 
-    LaunchedEffect(scanningActive) {
-        if (scanningActive) {
+    LaunchedEffect(scanningEnabled) {
+        if (scanningEnabled) {
             imageAnalysis.setAnalyzer(
                 ContextCompat.getMainExecutor(localContext),
                 analyzer
