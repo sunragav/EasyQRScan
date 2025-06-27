@@ -10,7 +10,8 @@ actual fun Scanner(
     onScanned: (String) -> Boolean,
     types: List<CodeType>,
     cameraPosition: CameraPosition,
-    defaultOrientation: CameraOrientation?
+    defaultOrientation: CameraOrientation?,
+    scanningEnabled: Boolean
 ) {
     Text("Scanner not implemented for JVM")
 }

@@ -23,7 +23,8 @@ fun CameraView(
     modifier: Modifier = Modifier,
     analyzer: BarcodeAnalyzer,
     cameraPosition: CameraPosition,
-    defaultOrientation: CameraOrientation?
+    defaultOrientation: CameraOrientation?,
+    scanningEnabled: Boolean = true,
 ) {
     val localContext = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -31,6 +32,18 @@ fun CameraView(
         ProcessCameraProvider.getInstance(localContext)
     }
     val previewView = remember { PreviewView(localContext) }
+    val imageAnalysis = remember { ImageAnalysis.Builder().build() }
+
+    LaunchedEffect(scanningEnabled) {
+        if (scanningEnabled) {
+            imageAnalysis.setAnalyzer(
+                ContextCompat.getMainExecutor(localContext),
+                analyzer
+            )
+        } else {
+            imageAnalysis.clearAnalyzer()
+        }
+    }
 
     LaunchedEffect(cameraPosition) {
         val preview = when (defaultOrientation) {
@@ -46,12 +59,6 @@ fun CameraView(
                 }
             }.build()
         preview.setSurfaceProvider(previewView.surfaceProvider)
-
-        val imageAnalysis = ImageAnalysis.Builder().build()
-        imageAnalysis.setAnalyzer(
-            ContextCompat.getMainExecutor(localContext),
-            analyzer
-        )
 
         runCatching {
             cameraProviderFuture.get().unbindAll()

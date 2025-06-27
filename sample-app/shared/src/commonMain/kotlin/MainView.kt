@@ -34,17 +34,24 @@ fun MainView() {
     ) {
         Column(modifier = Modifier.padding(it)) {
             Text("Scan QR-Code below")
-            var scannerVisible by remember {mutableStateOf(false)}
-            var cameraPosition by remember { mutableStateOf( CameraPosition.BACK)}
+            var scannerVisible by remember { mutableStateOf(false) }
+            var cameraPosition by remember { mutableStateOf(CameraPosition.BACK) }
+            var scanningActive by remember { mutableStateOf(false) }
             Button(onClick = {
                 scannerVisible = !scannerVisible
             }) {
                 Text("Toggle scanner (visible: $scannerVisible)")
             }
             Button(onClick = {
-                cameraPosition = if(cameraPosition== CameraPosition.BACK) CameraPosition.FRONT else CameraPosition.BACK
+                cameraPosition =
+                    if (cameraPosition == CameraPosition.BACK) CameraPosition.FRONT else CameraPosition.BACK
             }) {
                 Text("Toggle camera (position: $cameraPosition)")
+            }
+            Button(onClick = {
+                scanningActive = !scanningActive
+            }) {
+                Text("Toggle scanning (active: $scanningActive)")
             }
             if (scannerVisible) {
                 val scope = rememberCoroutineScope()
@@ -58,7 +65,8 @@ fun MainView() {
                     },
                     types = listOf(CodeType.QR),
                     cameraPosition = cameraPosition,
-                    defaultOrientation = CameraOrientation.LANDSCAPE
+                    defaultOrientation = CameraOrientation.LANDSCAPE,
+                    scanningEnabled = scanningActive
                 )
             }
         }
