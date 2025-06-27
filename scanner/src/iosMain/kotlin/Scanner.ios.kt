@@ -21,7 +21,8 @@ actual fun Scanner(
     onScanned: (String) -> Boolean, // return true to abort scanning
     types: List<CodeType>,
     cameraPosition: CameraPosition,
-    defaultOrientation: CameraOrientation?
+    defaultOrientation: CameraOrientation?,
+    scanningActive: Boolean
 ) {
     UiScannerView(
         modifier = modifier,
@@ -30,7 +31,8 @@ actual fun Scanner(
         },
         allowedMetadataTypes = types.toFormat(),
         cameraPosition = cameraPosition,
-        defaultOrientation = defaultOrientation
+        defaultOrientation = defaultOrientation,
+        scanningActive = scanningActive
     )
 }
 

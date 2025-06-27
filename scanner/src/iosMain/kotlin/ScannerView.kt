@@ -3,6 +3,7 @@ package org.publicvalue.multiplatform.qrcode
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
@@ -58,7 +59,8 @@ fun UiScannerView(
     allowedMetadataTypes: List<AVMetadataObjectType>,
     cameraPosition: CameraPosition,
     onScanned: (String) -> Boolean,
-    defaultOrientation: CameraOrientation? = null
+    defaultOrientation: CameraOrientation? = null,
+    scanningActive: Boolean
 ) {
     val coordinator = remember {
         ScannerCameraCoordinator(
@@ -79,6 +81,10 @@ fun UiScannerView(
         onDispose {
             listener.unregister()
         }
+    }
+
+    LaunchedEffect(scanningActive) {
+        coordinator.setScanningEnabled(scanningActive)
     }
 
     UIKitView<UIView>(
@@ -131,6 +137,8 @@ class ScannerCameraCoordinator(
     var defaultDeviceInput: AVCaptureDeviceInput? = null
     lateinit var currentCameraPositon: CameraPosition
     var cameraInitialised = false
+    private var metadataOutput: AVCaptureMetadataOutput = AVCaptureMetadataOutput()
+    private var allowedTypes: List<AVMetadataObjectType> = emptyList()
 
     private fun setupCamera() {
         val devices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo).map { it as AVCaptureDevice }
@@ -188,6 +196,10 @@ class ScannerCameraCoordinator(
         }
     }
 
+    fun setScanningEnabled(enabled: Boolean) {
+        metadataOutput?.metadataObjectTypes = if (enabled) allowedTypes else emptyList<Any>()
+    }
+
     private fun addInput(input: AVCaptureDeviceInput) {
         captureSession.inputs.map {
             captureSession.removeInput(it as AVCaptureDeviceInput)
@@ -209,7 +221,7 @@ class ScannerCameraCoordinator(
             return
         }
 
-        val metadataOutput = AVCaptureMetadataOutput()
+        allowedTypes = allowedMetadataTypes
 
         println("Adding metadata output")
         if (captureSession.canAddOutput(metadataOutput)) {
@@ -220,6 +232,7 @@ class ScannerCameraCoordinator(
             println("Could not add output")
             return
         }
+
         println("Adding preview layer")
         previewLayer = AVCaptureVideoPreviewLayer(session = captureSession).also {
             it.frame = layer.bounds

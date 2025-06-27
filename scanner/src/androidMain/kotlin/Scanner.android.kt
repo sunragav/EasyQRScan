@@ -20,12 +20,17 @@ actual fun Scanner(
     onScanned: (String) -> Boolean,
     types: List<CodeType>,
     cameraPosition: CameraPosition,
-    defaultOrientation: CameraOrientation?
+    defaultOrientation: CameraOrientation?,
+    scanningActive: Boolean,
 ) {
-    val analyzer = remember() {
-        BarcodeAnalyzer(types.toFormat(), onScanned)
+    val analyzer = remember(scanningActive) {
+        BarcodeAnalyzer(types.toFormat(), {
+            if (scanningActive) {
+                onScanned(it)
+            } else true
+        })
     }
-    CameraView(modifier, analyzer, cameraPosition, defaultOrientation)
+    CameraView(modifier, analyzer, cameraPosition, defaultOrientation, scanningActive)
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -34,13 +39,17 @@ actual fun rememberCameraPermissionState(): CameraPermissionState {
     val accPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
 
     val context = LocalContext.current
-    val wrapper = remember(accPermissionState) { AccompanistPermissionWrapper(accPermissionState, context) }
+    val wrapper =
+        remember(accPermissionState) { AccompanistPermissionWrapper(accPermissionState, context) }
 
     return wrapper
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
-class AccompanistPermissionWrapper (val accPermissionState: PermissionState, private val context: Context): CameraPermissionState {
+class AccompanistPermissionWrapper(
+    val accPermissionState: PermissionState,
+    private val context: Context
+) : CameraPermissionState {
     override val status: CameraPermissionStatus
         get() = accPermissionState.status.toCameraPermissionStatus()
 
