@@ -41,6 +41,7 @@ import platform.AVFoundation.AVMetadataMachineReadableCodeObject
 import platform.AVFoundation.AVMetadataObjectType
 import platform.AVFoundation.position
 import platform.CoreGraphics.CGRect
+import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.Foundation.NSError
 import platform.QuartzCore.CALayer
@@ -60,12 +61,14 @@ fun UiScannerView(
     cameraPosition: CameraPosition,
     onScanned: (String) -> Boolean,
     defaultOrientation: CameraOrientation? = null,
-    scanningEnabled: Boolean
+    scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale,
 ) {
     val coordinator = remember {
         ScannerCameraCoordinator(
             onScanned = onScanned,
-            cameraPosition = cameraPosition
+            cameraPosition = cameraPosition,
+            scanRegionScale = scanRegionScale
         )
     }
     if (coordinator.cameraInitialised)
@@ -100,18 +103,11 @@ fun UiScannerView(
             isNativeAccessibilityEnabled = true,
         )
     )
-
-//    DisposableEffect(Unit) {
-//        onDispose {
-//            // stop capture
-//            coordinator.
-//        }
-//    }
-
 }
 
 @OptIn(ExperimentalForeignApi::class)
-class ScannerPreviewView(private val coordinator: ScannerCameraCoordinator) : UIView(frame = cValue { CGRectZero }) {
+class ScannerPreviewView(private val coordinator: ScannerCameraCoordinator) :
+    UIView(frame = cValue { CGRectZero }) {
     @OptIn(ExperimentalForeignApi::class)
     override fun layoutSubviews() {
         super.layoutSubviews()
@@ -127,8 +123,9 @@ class ScannerPreviewView(private val coordinator: ScannerCameraCoordinator) : UI
 @OptIn(ExperimentalForeignApi::class)
 class ScannerCameraCoordinator(
     val onScanned: (String) -> Boolean,
-    val cameraPosition: CameraPosition
-): AVCaptureMetadataOutputObjectsDelegateProtocol, NSObject() {
+    val cameraPosition: CameraPosition,
+    val scanRegionScale: ScanRegionScale,
+) : AVCaptureMetadataOutputObjectsDelegateProtocol, NSObject() {
 
     private var previewLayer: AVCaptureVideoPreviewLayer? = null
     lateinit var captureSession: AVCaptureSession
@@ -139,10 +136,13 @@ class ScannerCameraCoordinator(
     var cameraInitialised = false
     private var metadataOutput: AVCaptureMetadataOutput = AVCaptureMetadataOutput()
     private var allowedTypes: List<AVMetadataObjectType> = emptyList()
+    private var previewLayerBounds: CValue<CGRect> = cValue { CGRectZero }
 
     private fun setupCamera() {
-        val devices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo).map { it as AVCaptureDevice }
-        val frontDevice: AVCaptureDevice? = devices.firstOrNull { it.position == AVCaptureDevicePositionFront }
+        val devices =
+            AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo).map { it as AVCaptureDevice }
+        val frontDevice: AVCaptureDevice? =
+            devices.firstOrNull { it.position == AVCaptureDevicePositionFront }
         val backDevice = devices.firstOrNull { it.position == AVCaptureDevicePositionBack }
         frontDeviceInput = frontDevice?.let {
             println("Initializing front camera input")
@@ -162,15 +162,15 @@ class ScannerCameraCoordinator(
     }
 
     private fun createDeviceInput(device: AVCaptureDevice) = memScoped {
-            val error: ObjCObjectVar<NSError?> = alloc<ObjCObjectVar<NSError?>>()
-            val videoInput = AVCaptureDeviceInput(device = device, error = error.ptr)
-            if (error.value != null) {
-                println(error.value)
-                null
-            } else {
-                videoInput
-            }
+        val error: ObjCObjectVar<NSError?> = alloc<ObjCObjectVar<NSError?>>()
+        val videoInput = AVCaptureDeviceInput(device = device, error = error.ptr)
+        if (error.value != null) {
+            println(error.value)
+            null
+        } else {
+            videoInput
         }
+    }
 
     fun switchCamera(cameraPosition: CameraPosition) {
         if (::currentCameraPositon.isInitialized.not() || currentCameraPositon != cameraPosition) {
@@ -197,21 +197,70 @@ class ScannerCameraCoordinator(
     }
 
     fun setScanningEnabled(enabled: Boolean) {
-        metadataOutput?.metadataObjectTypes = if (enabled) allowedTypes else emptyList<Any>()
+        metadataOutput.metadataObjectTypes = if (enabled) allowedTypes else emptyList<Any>()
+    }
+
+    private fun calculateRectOfInterest(): CValue<CGRect> {
+        val validScaleRange = 0.0f..<1.0f
+        if (scanRegionScale.horizontal !in validScaleRange || scanRegionScale.vertical !in validScaleRange) {
+            println("Invalid scanRegionScale values(out of (0,1) bounds): $scanRegionScale")
+            return CGRectMake(0.0, 0.0, 1.0, 1.0)
+        }
+
+        return previewLayerBounds.useContents {
+            val previewWidth = this.size.width
+            val previewHeight = this.size.height
+
+            val regionWidth = previewWidth * scanRegionScale.horizontal
+            val regionHeight = previewHeight * scanRegionScale.vertical
+
+            val regionX = (previewWidth - regionWidth) / 2.0
+            val regionY = (previewHeight - regionHeight) / 2.0
+
+            val normalizedX = regionX / previewWidth
+            val normalizedY = regionY / previewHeight
+            val normalizedWidth = regionWidth / previewWidth
+            val normalizedHeight = regionHeight / previewHeight
+
+            CGRectMake(
+                normalizedY, // iOS coordinate system: Y first
+                normalizedX, // iOS coordinate system: X second
+                normalizedHeight, // iOS coordinate system: Height
+                normalizedWidth  // iOS coordinate system: Width
+            )
+        }
+    }
+
+    private fun setRectOfInterest() {
+        if (!captureSession.running) {
+            println("Capture session not running")
+            return
+        }
+
+        if (scanRegionScale.horizontal >= 1.0f && scanRegionScale.vertical >= 1.0f) {
+            println("Using full scan area - not setting rectOfInterest")
+            return
+        }
+
+        metadataOutput.rectOfInterest = calculateRectOfInterest()
     }
 
     private fun addInput(input: AVCaptureDeviceInput) {
         captureSession.inputs.map {
             captureSession.removeInput(it as AVCaptureDeviceInput)
         }
-        if (captureSession.canAddInput(input)){
+        if (captureSession.canAddInput(input)) {
             captureSession.addInput(input)
             println("Adding input:$input successfully")
         }
     }
 
-    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-    fun prepare(layer: CALayer, allowedMetadataTypes: List<AVMetadataObjectType>, defaultOrientation: CameraOrientation?) {
+    @OptIn(ExperimentalForeignApi::class)
+    fun prepare(
+        layer: CALayer,
+        allowedMetadataTypes: List<AVMetadataObjectType>,
+        defaultOrientation: CameraOrientation?
+    ) {
         captureSession = AVCaptureSession()
         println("Initializing video input")
         setupCamera()
@@ -236,6 +285,7 @@ class ScannerCameraCoordinator(
         println("Adding preview layer")
         previewLayer = AVCaptureVideoPreviewLayer(session = captureSession).also {
             it.frame = layer.bounds
+            previewLayerBounds = layer.bounds
             it.videoGravity = AVLayerVideoGravityResizeAspectFill
             println("Set orientation")
             it.orientation = if(defaultOrientation==null || defaultOrientation != CameraOrientation.LANDSCAPE) AVCaptureVideoOrientationPortrait else AVCaptureVideoOrientationLandscapeRight
@@ -249,6 +299,7 @@ class ScannerCameraCoordinator(
                 println("Frame: ${this.size.width}x${this.size.height}")
             }
             layer.addSublayer(it)
+            setRectOfInterest()
         }
 
         println("Launching capture session")
@@ -260,7 +311,7 @@ class ScannerCameraCoordinator(
 
 
     fun setCurrentOrientation(newOrientation: UIDeviceOrientation) {
-        when(newOrientation) {
+        when (newOrientation) {
             UIDeviceOrientation.UIDeviceOrientationLandscapeLeft ->
                 previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeRight
             UIDeviceOrientation.UIDeviceOrientationLandscapeRight ->
@@ -274,8 +325,13 @@ class ScannerCameraCoordinator(
         }
     }
 
-    override fun captureOutput(output: AVCaptureOutput, didOutputMetadataObjects: List<*>, fromConnection: AVCaptureConnection) {
-        val metadataObject = didOutputMetadataObjects.firstOrNull() as? AVMetadataMachineReadableCodeObject
+    override fun captureOutput(
+        output: AVCaptureOutput,
+        didOutputMetadataObjects: List<*>,
+        fromConnection: AVCaptureConnection
+    ) {
+        val metadataObject =
+            didOutputMetadataObjects.firstOrNull() as? AVMetadataMachineReadableCodeObject
         metadataObject?.stringValue?.let { onFound(it) }
     }
 
@@ -290,5 +346,7 @@ class ScannerCameraCoordinator(
 
     fun setFrame(rect: CValue<CGRect>) {
         previewLayer?.setFrame(rect)
+        previewLayerBounds = rect
+        setRectOfInterest()
     }
 }
