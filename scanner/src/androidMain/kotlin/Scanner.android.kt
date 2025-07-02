@@ -4,9 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -22,15 +28,29 @@ actual fun Scanner(
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
     scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale,
 ) {
+    var cameraFeedWidth by remember { mutableIntStateOf(0) }
+    var cameraFeedHeight by remember { mutableIntStateOf(0) }
+    val cameraFeedSize by remember {
+        derivedStateOf {
+            Size(cameraFeedWidth.toFloat(), cameraFeedHeight.toFloat())
+        }
+    }
+
     val analyzer = remember(scanningEnabled) {
-        BarcodeAnalyzer(types.toFormat(), {
+        BarcodeAnalyzer(types.toFormat(), scanRegionScale, cameraFeedSize, {
             if (scanningEnabled) {
                 onScanned(it)
             } else true
         })
     }
-    CameraView(modifier, analyzer, cameraPosition, defaultOrientation, scanningEnabled)
+    BoxWithConstraints(modifier = modifier) {
+        cameraFeedWidth = constraints.maxWidth
+        cameraFeedHeight = constraints.maxHeight
+
+        CameraView(Modifier, analyzer, cameraPosition, defaultOrientation, scanningEnabled)
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)

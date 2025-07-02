@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
  * @param cameraPosition Camera position (front/back) to use.
  * @param defaultOrientation Default orientation of the camera.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 expect fun Scanner(
@@ -29,7 +30,8 @@ expect fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition = CameraPosition.BACK,
     defaultOrientation: CameraOrientation? = null,
-    scanningEnabled: Boolean
+    scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 )
 
 /**
@@ -43,6 +45,7 @@ expect fun Scanner(
  * @param openSettingsLabel Label to show on the "Go to settings" Button
  * @param defaultOrientation Default orientation of the camera.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -54,6 +57,7 @@ fun ScannerWithPermissions(
     openSettingsLabel: String = "Open Settings",
     defaultOrientation: CameraOrientation?,
     scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 ) {
     ScannerWithPermissions(
         modifier = modifier.clipToBounds(),
@@ -72,7 +76,8 @@ fun ScannerWithPermissions(
             }
         },
         defaultOrientation,
-        scanningEnabled
+        scanningEnabled,
+        scanRegionScale
     )
 }
 
@@ -86,6 +91,7 @@ fun ScannerWithPermissions(
  * @param permissionDeniedContent Content to show if permission was denied.
  * @param defaultOrientation Default orientation of the camera.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -96,6 +102,7 @@ fun ScannerWithPermissions(
     permissionDeniedContent: @Composable (CameraPermissionState) -> Unit,
     defaultOrientation: CameraOrientation?,
     scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 ) {
     val permissionState = rememberCameraPermissionState()
 
@@ -113,6 +120,7 @@ fun ScannerWithPermissions(
             cameraPosition = cameraPosition,
             defaultOrientation = defaultOrientation,
             scanningEnabled = scanningEnabled,
+            scanRegionScale = scanRegionScale
         )
     } else {
         permissionDeniedContent(permissionState)

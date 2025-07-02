@@ -22,7 +22,8 @@ actual fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
-    scanningEnabled: Boolean
+    scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale,
 ) {
     UiScannerView(
         modifier = modifier,
@@ -32,7 +33,8 @@ actual fun Scanner(
         allowedMetadataTypes = types.toFormat(),
         cameraPosition = cameraPosition,
         defaultOrientation = defaultOrientation,
-        scanningEnabled = scanningEnabled
+        scanningEnabled = scanningEnabled,
+        scanRegionScale = scanRegionScale
     )
 }
 
