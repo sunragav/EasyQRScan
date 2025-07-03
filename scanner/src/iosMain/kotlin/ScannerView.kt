@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
@@ -61,6 +60,7 @@ fun UiScannerView(
     cameraPosition: CameraPosition,
     onScanned: (String) -> Boolean,
     defaultOrientation: CameraOrientation? = null,
+    forcedCameraOrientation: CameraOrientation? = null,
     scanningEnabled: Boolean,
     scanRegionScale: ScanRegionScale,
 ) {
@@ -68,7 +68,8 @@ fun UiScannerView(
         ScannerCameraCoordinator(
             onScanned = onScanned,
             cameraPosition = cameraPosition,
-            scanRegionScale = scanRegionScale
+            scanRegionScale = scanRegionScale,
+            forcedCameraOrientation = forcedCameraOrientation
         )
     }
     if (coordinator.cameraInitialised)
@@ -125,6 +126,7 @@ class ScannerCameraCoordinator(
     val onScanned: (String) -> Boolean,
     val cameraPosition: CameraPosition,
     val scanRegionScale: ScanRegionScale,
+    val forcedCameraOrientation: CameraOrientation? = null,
 ) : AVCaptureMetadataOutputObjectsDelegateProtocol, NSObject() {
 
     private var previewLayer: AVCaptureVideoPreviewLayer? = null
@@ -311,18 +313,48 @@ class ScannerCameraCoordinator(
 
 
     fun setCurrentOrientation(newOrientation: UIDeviceOrientation) {
-        when (newOrientation) {
-            UIDeviceOrientation.UIDeviceOrientationLandscapeLeft ->
-                previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeRight
-            UIDeviceOrientation.UIDeviceOrientationLandscapeRight ->
-                previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeLeft
-            UIDeviceOrientation.UIDeviceOrientationPortrait ->
-                previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
-            UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown ->
-                previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown
+        when (forcedCameraOrientation) {
+            CameraOrientation.LANDSCAPE ->
+                when (newOrientation) {
+                    UIDeviceOrientation.UIDeviceOrientationLandscapeLeft ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeRight
+
+                    UIDeviceOrientation.UIDeviceOrientationLandscapeRight ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeLeft
+
+                    else -> Unit
+                }
+
+            CameraOrientation.PORTRAIT ->
+                when (newOrientation) {
+                    UIDeviceOrientation.UIDeviceOrientationPortrait ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
+
+                    UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown
+
+                    else -> Unit
+                }
+
             else ->
-                previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
+                when (newOrientation) {
+                    UIDeviceOrientation.UIDeviceOrientationLandscapeLeft ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeRight
+
+                    UIDeviceOrientation.UIDeviceOrientationLandscapeRight ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationLandscapeLeft
+
+                    UIDeviceOrientation.UIDeviceOrientationPortrait ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
+
+                    UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortraitUpsideDown
+
+                    else ->
+                        previewLayer?.connection?.videoOrientation = AVCaptureVideoOrientationPortrait
+                }
         }
+        return
     }
 
     override fun captureOutput(

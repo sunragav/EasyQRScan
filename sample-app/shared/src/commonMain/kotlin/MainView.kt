@@ -104,6 +104,7 @@ fun MainView() {
                         types = listOf(CodeType.QR),
                         cameraPosition = cameraPosition,
                         defaultOrientation = CameraOrientation.LANDSCAPE,
+                        forcedCameraOrientation = CameraOrientation.LANDSCAPE,
                         scanningEnabled = scanningActive,
                         scanRegionScale = scanRegionScale
                     )

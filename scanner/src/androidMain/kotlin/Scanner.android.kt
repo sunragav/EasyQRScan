@@ -27,6 +27,7 @@ actual fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
+    forcedCameraOrientation: CameraOrientation?, // not used on Android
     scanningEnabled: Boolean,
     scanRegionScale: ScanRegionScale,
 ) {
