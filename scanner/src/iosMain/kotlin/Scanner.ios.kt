@@ -22,6 +22,7 @@ actual fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
+    forcedCameraOrientation: CameraOrientation?,
     scanningEnabled: Boolean,
     scanRegionScale: ScanRegionScale,
 ) {
@@ -33,6 +34,7 @@ actual fun Scanner(
         allowedMetadataTypes = types.toFormat(),
         cameraPosition = cameraPosition,
         defaultOrientation = defaultOrientation,
+        forcedCameraOrientation = forcedCameraOrientation,
         scanningEnabled = scanningEnabled,
         scanRegionScale = scanRegionScale
     )

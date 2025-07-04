@@ -11,6 +11,7 @@ actual fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition,
     defaultOrientation: CameraOrientation?,
+    forcedCameraOrientation: CameraOrientation?,
     scanningEnabled: Boolean,
     scanRegionScale: ScanRegionScale,
 ) {
