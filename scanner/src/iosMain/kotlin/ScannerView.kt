@@ -336,11 +336,8 @@ class ScannerCameraCoordinator(
     }
 
     fun onFound(code: String) {
-        captureSession.stopRunning()
-        if (!onScanned(code)) {
-            GlobalScope.launch(Dispatchers.Default) {
-                captureSession.startRunning()
-            }
+        if (onScanned(code)) {
+            captureSession.stopRunning()
         }
     }
 
