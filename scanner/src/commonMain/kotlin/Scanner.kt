@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.dp
  *                  Return false if scanning should continue.
  * @param cameraPosition Camera position (front/back) to use.
  * @param defaultOrientation Default orientation of the camera.
+ * @param forcedCameraOrientation If set, forces the camera to stay in this orientation regardless of device rotation.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 expect fun Scanner(
@@ -29,7 +31,9 @@ expect fun Scanner(
     types: List<CodeType>,
     cameraPosition: CameraPosition = CameraPosition.BACK,
     defaultOrientation: CameraOrientation? = null,
-    scanningEnabled: Boolean
+    forcedCameraOrientation: CameraOrientation? = null,
+    scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 )
 
 /**
@@ -42,7 +46,9 @@ expect fun Scanner(
  * @param permissionText Text to show if permission was denied.
  * @param openSettingsLabel Label to show on the "Go to settings" Button
  * @param defaultOrientation Default orientation of the camera.
+ * @param forcedCameraOrientation If set, forces the camera to stay in this orientation regardless of device rotation.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -53,7 +59,9 @@ fun ScannerWithPermissions(
     permissionText: String = "Camera is required for QR Code scanning",
     openSettingsLabel: String = "Open Settings",
     defaultOrientation: CameraOrientation?,
+    forcedCameraOrientation: CameraOrientation? = null,
     scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 ) {
     ScannerWithPermissions(
         modifier = modifier.clipToBounds(),
@@ -72,7 +80,9 @@ fun ScannerWithPermissions(
             }
         },
         defaultOrientation,
-        scanningEnabled
+        forcedCameraOrientation,
+        scanningEnabled,
+        scanRegionScale
     )
 }
 
@@ -85,7 +95,9 @@ fun ScannerWithPermissions(
  *                  Return false if scanning should continue.
  * @param permissionDeniedContent Content to show if permission was denied.
  * @param defaultOrientation Default orientation of the camera.
+ * @param forcedCameraOrientation If set, forces the camera to stay in this orientation regardless of device rotation.
  * @param scanningEnabled Whether scanning is active.
+ * @param scanRegionScale Scale to which the active scan region should be narrowed down compared to the size of the visible camera feed.
  */
 @Composable
 fun ScannerWithPermissions(
@@ -95,7 +107,9 @@ fun ScannerWithPermissions(
     cameraPosition: CameraPosition,
     permissionDeniedContent: @Composable (CameraPermissionState) -> Unit,
     defaultOrientation: CameraOrientation?,
+    forcedCameraOrientation: CameraOrientation? = null,
     scanningEnabled: Boolean,
+    scanRegionScale: ScanRegionScale = ScanRegionScale(1.0f, 1.0f)
 ) {
     val permissionState = rememberCameraPermissionState()
 
@@ -112,7 +126,9 @@ fun ScannerWithPermissions(
             onScanned = onScanned,
             cameraPosition = cameraPosition,
             defaultOrientation = defaultOrientation,
+            forcedCameraOrientation = forcedCameraOrientation,
             scanningEnabled = scanningEnabled,
+            scanRegionScale = scanRegionScale
         )
     } else {
         permissionDeniedContent(permissionState)
