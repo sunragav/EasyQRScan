@@ -15,6 +15,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.io.ByteArrayOutputStream
+import kotlin.math.max
 
 class BarcodeAnalyzer(
     formats: Int = Barcode.FORMAT_QR_CODE,
@@ -35,8 +36,8 @@ class BarcodeAnalyzer(
             val cropRegion = getCameraImageCropForScanRegion(
                 imageWidth = image.width,
                 imageHeight = image.height,
-                uiWidth = cameraFeedSize.width,
-                uiHeight = cameraFeedSize.height,
+                uiWidth = max(cameraFeedSize.width,1f),
+                uiHeight = max(cameraFeedSize.height,1f),
                 scanRegionHorizontalScale = scanRegionScale.horizontal,
                 scanRegionVerticalScale = scanRegionScale.vertical
             )
