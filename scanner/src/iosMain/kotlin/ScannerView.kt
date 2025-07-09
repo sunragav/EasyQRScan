@@ -17,6 +17,7 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.useContents
 import kotlinx.cinterop.value
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -52,6 +53,7 @@ import platform.UIKit.UIView
 import platform.darwin.NSObject
 import platform.darwin.dispatch_get_main_queue
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun UiScannerView(
     modifier: Modifier = Modifier,
@@ -89,6 +91,13 @@ fun UiScannerView(
 
     LaunchedEffect(scanningEnabled) {
         coordinator.setScanningEnabled(scanningEnabled)
+        GlobalScope.launch {
+            if (scanningEnabled) {
+                coordinator.starCapture()
+            } else {
+                coordinator.stopCapture()
+            }
+        }
     }
 
     UIKitView<UIView>(
@@ -202,6 +211,16 @@ class ScannerCameraCoordinator(
         metadataOutput.metadataObjectTypes = if (enabled) allowedTypes else emptyList<Any>()
     }
 
+    fun starCapture() {
+        if (captureSession.running.not())
+            captureSession.startRunning()
+    }
+
+    fun stopCapture() {
+        if (captureSession.running)
+            captureSession.stopRunning()
+    }
+
     private fun calculateRectOfInterest(): CValue<CGRect> {
         val validScaleRange = 0.0f..<1.0f
         if (scanRegionScale.horizontal !in validScaleRange || scanRegionScale.vertical !in validScaleRange) {
@@ -290,7 +309,8 @@ class ScannerCameraCoordinator(
             previewLayerBounds = layer.bounds
             it.videoGravity = AVLayerVideoGravityResizeAspectFill
             println("Set orientation")
-            it.orientation = if(defaultOrientation==null || defaultOrientation != CameraOrientation.LANDSCAPE) AVCaptureVideoOrientationPortrait else AVCaptureVideoOrientationLandscapeRight
+            it.orientation =
+                if (defaultOrientation == null || defaultOrientation != CameraOrientation.LANDSCAPE) AVCaptureVideoOrientationPortrait else AVCaptureVideoOrientationLandscapeRight
             setCurrentOrientation(newOrientation = UIDevice.currentDevice.orientation)
             println("Adding sublayer")
             layer.bounds.useContents {
