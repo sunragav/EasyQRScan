@@ -91,13 +91,6 @@ fun UiScannerView(
 
     LaunchedEffect(scanningEnabled) {
         coordinator.setScanningEnabled(scanningEnabled)
-        GlobalScope.launch {
-            if (scanningEnabled) {
-                coordinator.starCapture()
-            } else {
-                coordinator.stopCapture()
-            }
-        }
     }
 
     UIKitView<UIView>(
@@ -209,16 +202,6 @@ class ScannerCameraCoordinator(
 
     fun setScanningEnabled(enabled: Boolean) {
         metadataOutput.metadataObjectTypes = if (enabled) allowedTypes else emptyList<Any>()
-    }
-
-    fun starCapture() {
-        if (captureSession.running.not())
-            captureSession.startRunning()
-    }
-
-    fun stopCapture() {
-        if (captureSession.running)
-            captureSession.stopRunning()
     }
 
     private fun calculateRectOfInterest(): CValue<CGRect> {
@@ -389,7 +372,7 @@ class ScannerCameraCoordinator(
 
     fun onFound(code: String) {
         if (onScanned(code)) {
-            captureSession.stopRunning()
+            setScanningEnabled(false)
         }
     }
 
